@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#04051a">
+<meta name="color-scheme" content="dark">
+<title>Lirio de Araña Roja</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500&family=Jost:wght@400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500&text=%E5%BD%BC%E5%B2%B8%E8%8A%B1%E3%81%B2%E3%81%8C%E3%82%93%E3%81%B0%E3%81%AA&display=swap">
+<style>
+/* Layout: lienzo nocturno a pantalla completa; una flor grande anclada abajo al centro que se mece desde el tallo,
+   texto pequeño arriba, título en kanji vertical a un lado y luna arriba a la derecha. */
+:root {
+  --night-top: #04051a;
+  --night-mid: #0e1038;
+  --night-bottom: #2a1445;
+  --moon: rgba(150, 160, 255, 0.24);
+  --petal: #e0112b;
+  --anther: #f6c35a;
+  --ink: #f3e9ea;
+  --ink-soft: rgba(243, 233, 234, 0.6);
+  --kanji: rgba(255, 205, 212, 0.88);
+  --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-ui: 'Jost', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-jp: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif CJK JP', serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; overscroll-behavior: none; -webkit-text-size-adjust: 100%; background: var(--night-top); }
+body {
+  margin: 0;
+  overflow: hidden;
+  color: var(--ink);
+  background-color: var(--night-top);
+  background-image:
+    radial-gradient(70vmin 70vmin at 82% 10%, var(--moon), transparent 70%),
+    linear-gradient(180deg, var(--night-top) 0%, var(--night-mid) 55%, var(--night-bottom) 100%);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.moon {
+  position: fixed;
+  right: 7vw;
+  top: calc(env(safe-area-inset-top, 0px) + 4vh);
+  width: clamp(64px, 16vmin, 150px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 64% 60%, rgba(214, 204, 160, 0.55) 0 9%, transparent 10%),
+    radial-gradient(circle at 34% 70%, rgba(214, 204, 160, 0.45) 0 6%, transparent 7%),
+    radial-gradient(circle at 42% 32%, rgba(214, 204, 160, 0.4) 0 5%, transparent 6%),
+    radial-gradient(circle at 38% 36%, #fffbe9 0 55%, #f1e6bf 100%);
+  box-shadow:
+    0 0 0 clamp(5px, 1.6vmin, 14px) rgba(255, 246, 210, 0.08),
+    0 0 50px 16px rgba(200, 210, 255, 0.28),
+    0 0 150px 50px rgba(120, 130, 230, 0.2);
+}
+#c {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.rays {
+  position: fixed;
+  inset: -5%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background: linear-gradient(112deg,
+    transparent 38%, rgba(170, 180, 255, 0.09) 44%, transparent 50%,
+    transparent 56%, rgba(170, 180, 255, 0.06) 61%, transparent 67%);
+  animation: shimmer 9s ease-in-out infinite alternate;
+}
+.vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 120% 100% at 50% 55%, transparent 55%, rgba(2, 2, 12, 0.6) 100%);
+}
+.caption {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: calc(env(safe-area-inset-top, 0px) + 9vh);
+  padding-inline: 16px;
+  text-align: center;
+  pointer-events: none;
+  animation: rise 2.6s ease-out 1.6s both;
+}
+.line {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.1rem, 2.6vw, 1.6rem);
+  letter-spacing: 0.04em;
+  text-wrap: balance;
+  text-shadow: 0 0 18px rgba(255, 40, 60, 0.45);
+}
+.latin {
+  margin: 0.7rem 0 0;
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.sub {
+  margin: 0.9rem auto 0;
+  max-width: 34ch;
+  min-height: 2.6em;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(0.92rem, 2vw, 1.1rem);
+  line-height: 1.3;
+  text-wrap: balance;
+  color: var(--ink-soft);
+  transition: opacity 1.2s ease;
+}
+.sub.off { opacity: 0; }
+.kanji {
+  position: fixed;
+  left: max(14px, 4vw);
+  top: calc(env(safe-area-inset-top, 0px) + 12vh);
+  writing-mode: vertical-rl;
+  font-family: var(--font-jp);
+  font-weight: 500;
+  color: var(--kanji);
+  text-shadow: 0 0 14px rgba(255, 40, 70, 0.7), 0 0 36px rgba(255, 40, 70, 0.35);
+  pointer-events: none;
+  animation: rise 2.6s ease-out 2.2s both;
+}
+.k1 { font-size: clamp(1.7rem, 5.4vmin, 2.8rem); letter-spacing: 0.28em; }
+.k2 { display: inline-block; margin-block-start: 1.1rem; font-size: clamp(0.8rem, 2.2vmin, 1.05rem); letter-spacing: 0.4em; opacity: 0.75; }
+.hint {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: 0.66rem;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  pointer-events: none;
+  opacity: 0;
+  animation: hint 11s ease 5s both;
+}
+.hint.gone { animation: none; opacity: 0; }
+.bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 13vh;
+  background: #000;
+  pointer-events: none;
+  animation-duration: 2.4s;
+  animation-timing-function: cubic-bezier(0.6, 0, 0.2, 1);
+  animation-delay: 0.9s;
+  animation-fill-mode: forwards;
+}
+.bar.top { top: 0; animation-name: barTop; }
+.bar.bottom { bottom: 0; animation-name: barBottom; }
+.curtain {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  pointer-events: none;
+  animation: fadeOut 2.2s ease 0.2s forwards;
+}
+@media (max-aspect-ratio: 4/5) {
+  .caption { top: calc(env(safe-area-inset-top, 0px) + 17vh); }
+  .kanji { top: calc(env(safe-area-inset-top, 0px) + 27vh); }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes shimmer {
+  from { opacity: 0.4; transform: translateX(-2%); }
+  to { opacity: 1; transform: translateX(2%); }
+}
+@keyframes hint {
+  0% { opacity: 0; }
+  15%, 80% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+@keyframes barTop { to { transform: translateY(-100%); } }
+@keyframes barBottom { to { transform: translateY(100%); } }
+@keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) {
+  .caption, .kanji { animation: none; }
+  .rays { animation: none; }
+  .bar, .curtain { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="moon" aria-hidden="true"></div>
+<canvas id="c" role="img" aria-label="Un lirio de araña rojo en estilo anime que se mece suavemente bajo un cielo de noche estrellada"></canvas>
+<div class="rays" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<header class="caption">
+  <p class="line" id="frase">Usted ama los lirios de araña rojos velda</p>
+  <p class="latin" id="latino">Pa uste, muy sensillo pero con cariño abuela</p>
+  <p class="sub off" id="sub" aria-live="polite"></p>
+</header>
+<div class="kanji" aria-hidden="true"><span class="k1">彼岸花</span><span class="k2">アミラーゼ</span></div>
+<p class="hint" id="hint">Toca la pantalla</p>
+<div class="bar top" aria-hidden="true"></div>
+<div class="bar bottom" aria-hidden="true"></div>
+<div class="curtain" aria-hidden="true"></div>
+
+<script>
+(function () {
+  /* ===== Textos: cámbialos aquí ===== */
+  var CONFIG = {
+    frase: 'Usted ama los lirios de araña rojos velda',
+    latino: 'Pa uste, muy sensillo pero con cariño abuela',
+    subtitulos: [
+      'En Japón se llaman higanbana, las flores del reencuentro.',
+      'Florecen en otoño, cuando las noches empiezan a alargarse.',
+      'Se dice que unen a quienes se separaron.',
+      'Le gusto Abuelita?.'
+    ]
+  };
+  document.getElementById('frase').textContent = CONFIG.frase;
+  document.getElementById('latino').textContent = CONFIG.latino;
+
+  var subEl = document.getElementById('sub');
+  var subIdx = 0;
+  function showSub() {
+    subEl.classList.add('off');
+    setTimeout(function () {
+      subEl.textContent = CONFIG.subtitulos[subIdx % CONFIG.subtitulos.length];
+      subEl.classList.remove('off');
+      subIdx++;
+    }, 1300);
+  }
+  if (CONFIG.subtitulos.length) {
+    setTimeout(function () { showSub(); setInterval(showSub, 7500); }, 4200);
+  }
+
+  /* ===== Lienzo ===== */
+  var cv = document.getElementById('c');
+  var mainCtx = cv.getContext('2d');
+  var ctx = mainCtx;
+  var lc = [], lx = [], RES = [0.4, 0.55, 0.75];
+  for (var li = 0; li < 3; li++) {
+    lc[li] = document.createElement('canvas');
+    lx[li] = lc[li].getContext('2d');
+  }
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var amp = reduce ? 0.25 : 1;
+  var W = 0, H = 0, DPR = 1, pulse = 0;
+
+  function mulberry(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  /* ---------- Flores ---------- */
+  function makeFlower(o) {
+    var r = mulberry(o.seed);
+    var petals = [], stamens = [], i, f, base, sgn;
+    var front = 6;
+    for (i = 0; i < front; i++) {
+      f = (i / (front - 1)) * 2 - 1;
+      base = f * 1.35 + (r() - 0.5) * 0.18;
+      sgn = base >= 0 ? 1 : -1;
+      petals.push({
+        base: base,
+        len: (0.92 + r() * 0.2) * (1 - Math.abs(f) * 0.08),
+        wid: 0.105 + r() * 0.03,
+        curl: sgn * (0.9 + Math.abs(f) * 0.6 + r() * 0.3),
+        ph: r() * 6.28,
+        back: false
+      });
+    }
+    var backBases = [-1.05, -0.35, 0.4, 1.05];
+    for (i = 0; i < backBases.length; i++) {
+      base = backBases[i] + (r() - 0.5) * 0.2;
+      sgn = base >= 0 ? 1 : -1;
+      petals.unshift({
+        base: base,
+        len: 0.78 + r() * 0.12,
+        wid: 0.1 + r() * 0.02,
+        curl: sgn * (0.9 + r() * 0.5),
+        ph: r() * 6.28,
+        back: true
+      });
+    }
+    var m = 7;
+    for (i = 0; i < m; i++) {
+      f = (i / (m - 1)) * 2 - 1;
+      base = f * 1.0 + (r() - 0.5) * 0.15;
+      stamens.push({
+        base: base,
+        curl: -(base >= 0 ? 1 : -1) * (0.55 + r() * 0.4),
+        len: 1.45 + r() * 0.35,
+        ph: r() * 6.28
+      });
+    }
+    return {
+      fx: o.fx, fh: o.fh, sc: o.sc, ph: o.ph, stat: o.stat, layer: o.layer, fy: o.fy,
+      petals: petals, stamens: stamens,
+      x: 0, y: 0, h: 0, S: 0
+    };
+  }
+
+  var flowers = [];
+  (function () {
+    var r = mulberry(5), i;
+    // capa 0: horizonte lejano, flores diminutas
+    for (i = 0; i < 24; i++) {
+      flowers.push(makeFlower({ layer: 0, fy: 0.74 + r() * 0.01, fx: (i + 0.1 + r() * 0.8) / 24,
+        fh: 0.09 + r() * 0.05, sc: 0.11 + r() * 0.06, ph: r() * 6.28, stat: (r() - 0.5) * 0.08, seed: 100 + i }));
+    }
+    // capa 1: campo lejano
+    for (i = 0; i < 14; i++) {
+      flowers.push(makeFlower({ layer: 1, fy: 0.81 + r() * 0.01, fx: (i + 0.1 + r() * 0.8) / 14,
+        fh: 0.12 + r() * 0.07, sc: 0.18 + r() * 0.08, ph: r() * 6.28, stat: (r() - 0.5) * 0.08, seed: 200 + i }));
+    }
+    // capa 2: campo medio
+    for (i = 0; i < 8; i++) {
+      flowers.push(makeFlower({ layer: 2, fy: 0.90, fx: (i + 0.1 + r() * 0.8) / 8,
+        fh: 0.16 + r() * 0.08, sc: 0.28 + r() * 0.1, ph: r() * 6.28, stat: (r() - 0.5) * 0.07, seed: 300 + i }));
+    }
+    // capa 3: primer plano
+    flowers.push(makeFlower({ layer: 3, fy: 0.985, fx: 0.50, fh: 0.46, sc: 1.00, ph: 0.0, stat: 0.02, seed: 7 }));
+    flowers.push(makeFlower({ layer: 3, fy: 0.985, fx: 0.19, fh: 0.30, sc: 0.56, ph: 2.1, stat: -0.03, seed: 21 }));
+    flowers.push(makeFlower({ layer: 3, fy: 0.985, fx: 0.83, fh: 0.34, sc: 0.62, ph: 4.0, stat: 0.035, seed: 33 }));
+  })();
+
+  /* ---------- Cielo, brasas, bokeh, pétalos y pasto ---------- */
+  var stars = [], embers = [], grass = [], orbs = [], falls = [];
+
+  function makeFall(init) {
+    return {
+      x: Math.random() * W,
+      y: init ? Math.random() * H * 0.9 : -20 - Math.random() * 80,
+      vx: -10 + Math.random() * 20, vy: 22 + Math.random() * 30,
+      s: 3.5 + Math.random() * 4.5,
+      rot: Math.random() * 6.28, vr: -1.5 + Math.random() * 3,
+      ph: Math.random() * 6.28, burst: false, life: 0
+    };
+  }
+
+  function initScene() {
+    var r = mulberry(99), i;
+    stars = [];
+    var count = Math.round(Math.min(220, W * H / 4800));
+    for (i = 0; i < count; i++) {
+      var sx = r(), sy = Math.pow(r(), 1.3) * 0.78;
+      if (sx > 0.64 && sy < 0.24) sx -= 0.4;
+      stars.push({
+        x: sx, y: sy,
+        r: 0.4 + r() * 1.1 + (r() < 0.07 ? 1.1 : 0), ph: r() * 6.28, sp: 0.6 + r() * 1.8,
+        a: 0.35 + r() * 0.65
+      });
+    }
+    embers = [];
+    for (i = 0; i < 26; i++) {
+      embers.push({
+        x: r(), y: r(), vy: 0.012 + r() * 0.02, r: 0.8 + r() * 1.6,
+        ph: r() * 6.28, a: 0.15 + r() * 0.35
+      });
+    }
+    orbs = [];
+    var cols = ['255,90,140', '150,120,255', '255,60,70', '120,160,255'];
+    for (i = 0; i < 9; i++) {
+      orbs.push({
+        x: r(), y: 0.1 + r() * 0.65, r: 0.04 + r() * 0.07,
+        ph: r() * 6.28, sp: 0.2 + r() * 0.4, c: cols[Math.floor(r() * cols.length)]
+      });
+    }
+    grass = [];
+    var n = Math.round(Math.min(90, W / 8));
+    for (i = 0; i < n; i++) {
+      grass.push({ x: r(), h: 0.03 + r() * 0.07, ph: r() * 6.28, w: 1 + r() * 1.6 });
+    }
+    if (!falls.length) {
+      for (i = 0; i < 16; i++) falls.push(makeFall(true));
+    }
+  }
+
+  function layout() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = cv.clientWidth || window.innerWidth;
+    H = cv.clientHeight || window.innerHeight;
+    cv.width = Math.round(W * DPR);
+    cv.height = Math.round(H * DPR);
+    mainCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    for (var q = 0; q < 3; q++) {
+      lc[q].width = Math.round(W * DPR * RES[q]);
+      lc[q].height = Math.round(H * DPR * RES[q]);
+      lx[q].setTransform(DPR * RES[q], 0, 0, DPR * RES[q], 0, 0);
+    }
+    var baseS = Math.min(W * 0.29, H * 0.19);
+    for (var i = 0; i < flowers.length; i++) {
+      var fl = flowers[i];
+      fl.x = W * fl.fx;
+      fl.y = H * fl.fy;
+      fl.h = H * fl.fh;
+      fl.S = baseS * fl.sc;
+    }
+    initScene();
+  }
+
+  /* ---------- Dibujo de pétalos y estambres ---------- */
+  function drawPetal(p, S, t, swV, k) {
+    var N = 24;
+    var L = p.len * S * (0.6 + 0.4 * k);
+    var base = p.base * (0.45 + 0.55 * k);
+    var curl = p.curl * (0.15 + 0.85 * k);
+    var flut = Math.sin(t * 1.25 + p.ph) * 0.05 - swV * 0.04;
+    var x = 0, y = 0, A = [], B = [], C = [], i, u, th, env, w1, w2, nx, ny;
+    for (i = 0; i <= N; i++) {
+      u = i / N;
+      th = base + flut * u + curl * Math.pow(u, 1.7);
+      if (i > 0) { x += Math.sin(th) * L / N; y -= Math.cos(th) * L / N; }
+      env = Math.pow(Math.sin(Math.PI * Math.pow(u, 0.75)), 0.85);
+      w1 = S * p.wid * env * (1 + 0.2 * Math.sin(u * 13 + p.ph + t * 1.1));
+      w2 = S * p.wid * env * (1 + 0.2 * Math.sin(u * 11 + p.ph * 1.7 + t * 0.9));
+      nx = Math.cos(th); ny = Math.sin(th);
+      A.push([x - nx * w1, y - ny * w1]);
+      B.push([x + nx * w2, y + ny * w2]);
+      C.push([x, y]);
+    }
+    ctx.beginPath();
+    ctx.moveTo(A[0][0], A[0][1]);
+    for (i = 1; i <= N; i++) ctx.lineTo(A[i][0], A[i][1]);
+    for (i = N; i >= 0; i--) ctx.lineTo(B[i][0], B[i][1]);
+    ctx.closePath();
+    var g = ctx.createLinearGradient(0, 0, x, y);
+    // sombreado plano estilo anime: tres tonos con cortes duros
+    if (p.back) {
+      g.addColorStop(0, '#3a0212'); g.addColorStop(0.45, '#3a0212');
+      g.addColorStop(0.45, '#7a0a1e'); g.addColorStop(1, '#7a0a1e');
+    } else {
+      g.addColorStop(0, '#8a0719'); g.addColorStop(0.3, '#8a0719');
+      g.addColorStop(0.3, '#d80f2c'); g.addColorStop(0.72, '#d80f2c');
+      g.addColorStop(0.72, '#ff3550'); g.addColorStop(1, '#ff3550');
+    }
+    ctx.fillStyle = g;
+    ctx.fill();
+    // contorno oscuro
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = Math.max(0.8, S * 0.016);
+    ctx.strokeStyle = p.back ? 'rgba(25,0,6,0.9)' : 'rgba(50,0,10,0.95)';
+    ctx.stroke();
+    // brillo de luna en el borde
+    if (!p.back) {
+      ctx.beginPath();
+      ctx.moveTo(B[3][0], B[3][1]);
+      for (i = 4; i < N - 3; i++) ctx.lineTo(B[i][0], B[i][1]);
+      ctx.lineWidth = Math.max(0.5, S * 0.011);
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = 'rgba(255,196,206,0.85)';
+      ctx.stroke();
+    }
+    // nervio central
+    ctx.beginPath();
+    ctx.moveTo(C[2][0], C[2][1]);
+    for (i = 3; i < N - 2; i++) ctx.lineTo(C[i][0], C[i][1]);
+    ctx.lineWidth = Math.max(0.5, S * 0.006);
+    ctx.strokeStyle = 'rgba(70,0,10,0.35)';
+    ctx.stroke();
+  }
+
+  function drawStamen(s, S, t, swV, k) {
+    var N = 16;
+    var L = s.len * S * (0.55 + 0.45 * k);
+    var base = s.base * (0.4 + 0.6 * k);
+    var curl = s.curl * (0.2 + 0.8 * k);
+    var flut = Math.sin(t * 1.5 + s.ph) * 0.07 - swV * 0.07;
+    var x = 0, y = 0, th = 0, i, u;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    for (i = 1; i <= N; i++) {
+      u = i / N;
+      th = base + flut * u + curl * Math.pow(u, 1.4);
+      x += Math.sin(th) * L / N;
+      y -= Math.cos(th) * L / N;
+      ctx.lineTo(x, y);
+    }
+    ctx.lineWidth = Math.max(1, S * 0.012);
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(214,28,48,0.95)';
+    ctx.stroke();
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(th);
+    if (S > 45) {
+      ctx.shadowColor = 'rgba(246,195,90,0.8)';
+      ctx.shadowBlur = S * 0.05;
+    }
+    ctx.fillStyle = '#f6c35a';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, S * 0.018, S * 0.045, 0, 0, 6.2832);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawFlower(fl, t, k) {
+    var S = fl.S, h = fl.h, bx = fl.x, by = fl.y, i, s, pass;
+    var sw = amp * (0.65 * Math.sin(t * 0.8 + fl.ph) + 0.35 * Math.sin(t * 1.7 + fl.ph * 2.1));
+    var swV = amp * (0.52 * Math.cos(t * 0.8 + fl.ph) + 0.6 * Math.cos(t * 1.7 + fl.ph * 2.1));
+    var lean = sw * h * 0.2 + h * fl.stat;
+
+    // tallo con contorno
+    var N = 26, pts = [];
+    for (i = 0; i <= N; i++) {
+      s = i / N;
+      pts.push([bx + lean * s * s, by - h * s]);
+    }
+    var sg = ctx.createLinearGradient(0, by, 0, by - h);
+    sg.addColorStop(0, '#1b230f');
+    sg.addColorStop(1, '#6a8528');
+    ctx.lineCap = 'round';
+    for (pass = 0; pass < 2; pass++) {
+      ctx.strokeStyle = pass === 0 ? '#04070a' : sg;
+      for (i = 1; i <= N; i++) {
+        s = i / N;
+        ctx.lineWidth = S * (0.055 - 0.022 * s) + (pass === 0 ? Math.max(1, S * 0.022) : 0);
+        ctx.beginPath();
+        ctx.moveTo(pts[i - 1][0], pts[i - 1][1]);
+        ctx.lineTo(pts[i][0], pts[i][1]);
+        ctx.stroke();
+      }
+    }
+    // brillo del tallo
+    ctx.strokeStyle = 'rgba(200,225,130,0.35)';
+    ctx.lineWidth = Math.max(0.5, S * 0.008);
+    ctx.beginPath();
+    ctx.moveTo(pts[3][0] + S * 0.013, pts[3][1]);
+    for (i = 4; i < N - 1; i++) ctx.lineTo(pts[i][0] + S * 0.013, pts[i][1]);
+    ctx.stroke();
+
+    // cabeza de la flor
+    var top = pts[N];
+    var tilt = Math.atan2(2 * lean, h) + swV * 0.05;
+    ctx.save();
+    ctx.translate(top[0], top[1]);
+    ctx.rotate(tilt);
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    var gA = 0.26 + (fl.layer === 3 ? pulse * 0.35 : 0);
+    var gl = ctx.createRadialGradient(0, -S * 0.5, 0, 0, -S * 0.5, S * 2.3);
+    gl.addColorStop(0, 'rgba(255,30,50,' + gA.toFixed(3) + ')');
+    gl.addColorStop(1, 'rgba(255,30,50,0)');
+    ctx.fillStyle = gl;
+    ctx.fillRect(-S * 2.5, -S * 3, S * 5, S * 5);
+    ctx.restore();
+
+    for (i = 0; i < fl.petals.length; i++) drawPetal(fl.petals[i], S, t, swV, k);
+    for (i = 0; i < fl.stamens.length; i++) drawStamen(fl.stamens[i], S, t, swV, k);
+
+    ctx.fillStyle = '#5a0512';
+    ctx.beginPath();
+    ctx.arc(0, 0, S * 0.04, 0, 6.2832);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /* ---------- Fondo ---------- */
+  function drawStars(t) {
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i];
+      var a = s.a * (0.45 + 0.55 * (0.5 + 0.5 * Math.sin(t * s.sp + s.ph)));
+      ctx.fillStyle = 'rgba(220,228,255,' + a.toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.arc(s.x * W, s.y * H, s.r, 0, 6.2832);
+      ctx.fill();
+      if (s.r > 1.6) {
+        // destello de cuatro puntas
+        var len = s.r * 5 * (0.5 + 0.5 * a / s.a);
+        ctx.strokeStyle = 'rgba(235,240,255,' + (a * 0.8).toFixed(3) + ')';
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.moveTo(s.x * W - len, s.y * H); ctx.lineTo(s.x * W + len, s.y * H);
+        ctx.moveTo(s.x * W, s.y * H - len); ctx.lineTo(s.x * W, s.y * H + len);
+        ctx.stroke();
+      }
+    }
+  }
+
+  function drawBokeh(t) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    var m = Math.min(W, H);
+    for (var i = 0; i < orbs.length; i++) {
+      var o = orbs[i];
+      var a = 0.05 + 0.04 * Math.sin(t * o.sp + o.ph);
+      var x = o.x * W + Math.sin(t * 0.15 * amp + o.ph) * 18;
+      var y = o.y * H + Math.cos(t * 0.12 * amp + o.ph) * 12;
+      var rad = o.r * m;
+      var g = ctx.createRadialGradient(x, y, 0, x, y, rad);
+      g.addColorStop(0, 'rgba(' + o.c + ',' + a.toFixed(3) + ')');
+      g.addColorStop(0.7, 'rgba(' + o.c + ',' + (a * 0.8).toFixed(3) + ')');
+      g.addColorStop(1, 'rgba(' + o.c + ',0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(x, y, rad, 0, 6.2832);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawEmbers(t, dt) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (var i = 0; i < embers.length; i++) {
+      var e = embers[i];
+      e.y -= e.vy * dt * amp;
+      if (e.y < -0.05) { e.y = 1.02; }
+      var x = e.x * W + Math.sin(t * 0.5 + e.ph) * 14;
+      var a = e.a * (0.6 + 0.4 * Math.sin(t * 1.3 + e.ph));
+      ctx.fillStyle = 'rgba(255,90,70,' + a.toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.arc(x, e.y * H, e.r, 0, 6.2832);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawFalls(t, dt) {
+    for (var i = falls.length - 1; i >= 0; i--) {
+      var p = falls[i];
+      var kk = p.burst ? 1 : amp;
+      if (p.burst) {
+        p.life -= dt;
+        p.vy += 260 * dt;
+        p.vx *= 0.985;
+        if (p.life <= 0) { falls.splice(i, 1); continue; }
+      } else {
+        p.vx += Math.sin(t * 0.8 + p.ph) * 8 * dt;
+      }
+      p.x += p.vx * dt * kk;
+      p.y += p.vy * dt * kk;
+      p.rot += p.vr * dt;
+      if (!p.burst && (p.y > H + 20 || p.x < -30 || p.x > W + 30)) { falls[i] = makeFall(false); continue; }
+      var a = p.burst ? Math.min(1, p.life / 0.6) : 1;
+      var sx = Math.max(0.15, Math.abs(Math.cos(t * 2.2 + p.ph)));
+      var s = p.s;
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.scale(sx, 1);
+      ctx.beginPath();
+      ctx.moveTo(0, -s * 1.6);
+      ctx.quadraticCurveTo(s * 0.9, -s * 0.2, 0, s * 1.6);
+      ctx.quadraticCurveTo(-s * 0.9, -s * 0.2, 0, -s * 1.6);
+      ctx.closePath();
+      ctx.fillStyle = '#ff2a44';
+      ctx.fill();
+      ctx.lineWidth = Math.max(0.6, s * 0.18);
+      ctx.strokeStyle = 'rgba(50,0,10,0.9)';
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  function drawGround(t) {
+    var i;
+    var mg = ctx.createLinearGradient(0, H * 0.8, 0, H);
+    mg.addColorStop(0, 'rgba(2,3,10,0)');
+    mg.addColorStop(1, 'rgba(2,3,10,0.92)');
+    ctx.fillStyle = mg;
+    ctx.fillRect(0, H * 0.8, W, H * 0.2);
+    ctx.strokeStyle = '#050806';
+    ctx.lineCap = 'round';
+    for (i = 0; i < grass.length; i++) {
+      var g = grass[i];
+      var sw = amp * Math.sin(t * 0.9 + g.ph + g.x * 6);
+      var gh = g.h * H;
+      var x = g.x * W;
+      ctx.lineWidth = g.w;
+      ctx.beginPath();
+      ctx.moveTo(x, H + 2);
+      ctx.quadraticCurveTo(x + sw * gh * 0.15, H - gh * 0.6, x + sw * gh * 0.4, H - gh);
+      ctx.stroke();
+    }
+  }
+
+  /* ---------- Estrellas fugaces ---------- */
+  var meteors = [], nextMeteor = 4.5;
+
+  function spawnMeteor() {
+    var ang = 0.35 + Math.random() * 0.3;
+    var dir = Math.random() < 0.5 ? 1 : -1;
+    var sp = 650 + Math.random() * 450;
+    meteors.push({
+      x: W * (0.15 + Math.random() * 0.7),
+      y: H * (0.03 + Math.random() * 0.3),
+      vx: Math.cos(ang) * sp * dir,
+      vy: Math.sin(ang) * sp,
+      life: 0,
+      max: 0.9 + Math.random() * 0.5,
+      tail: 120 + Math.random() * 120
+    });
+  }
+
+  function drawMeteors(t, dt) {
+    var i;
+    if (!reduce && t > nextMeteor) {
+      spawnMeteor();
+      if (Math.random() < 0.25) spawnMeteor();
+      nextMeteor = t + 2.5 + Math.random() * 4.5;
+    }
+    for (i = meteors.length - 1; i >= 0; i--) {
+      var m = meteors[i];
+      m.life += dt;
+      m.x += m.vx * dt;
+      m.y += m.vy * dt;
+      var p = m.life / m.max;
+      if (p >= 1) { meteors.splice(i, 1); continue; }
+      var a = Math.sin(Math.PI * p);
+      var sp = Math.sqrt(m.vx * m.vx + m.vy * m.vy);
+      var ux = m.vx / sp, uy = m.vy / sp;
+      var tx = m.x - ux * m.tail, ty = m.y - uy * m.tail;
+      var g = ctx.createLinearGradient(m.x, m.y, tx, ty);
+      g.addColorStop(0, 'rgba(255,255,255,' + (0.95 * a).toFixed(3) + ')');
+      g.addColorStop(0.3, 'rgba(190,210,255,' + (0.45 * a).toFixed(3) + ')');
+      g.addColorStop(1, 'rgba(150,180,255,0)');
+      ctx.strokeStyle = g;
+      ctx.lineWidth = 1.8;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(m.x, m.y);
+      ctx.lineTo(tx, ty);
+      ctx.stroke();
+      ctx.save();
+      ctx.shadowColor = 'rgba(200,220,255,1)';
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = 'rgba(255,255,255,' + a.toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, 1.8, 0, 6.2832);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  /* ---------- Capas de profundidad ---------- */
+  var TINT = ['rgba(40,30,100,0.62)', 'rgba(30,22,84,0.5)', 'rgba(14,11,46,0.3)'];
+  var ALPHA = [0.85, 0.92, 0.97];
+  var FADE = [[0.68, 0.77], [0.75, 0.84], [0.84, 0.93]];
+  var FOG = ['34,26,84', '24,18,66', '10,9,34'];
+
+  function drawLayer(L, t, k) {
+    var lg = lx[L];
+    ctx = lg;
+    lg.clearRect(0, 0, W, H);
+    for (var i = 0; i < flowers.length; i++) {
+      if (flowers[i].layer === L) drawFlower(flowers[i], t, k);
+    }
+    lg.globalCompositeOperation = 'source-atop';
+    lg.fillStyle = TINT[L];
+    lg.fillRect(0, 0, W, H);
+    lg.globalCompositeOperation = 'source-over';
+    ctx = mainCtx;
+    mainCtx.save();
+    mainCtx.globalAlpha = ALPHA[L];
+    mainCtx.imageSmoothingEnabled = true;
+    mainCtx.drawImage(lc[L], 0, 0, W, H);
+    mainCtx.restore();
+    // neblina de suelo que esconde la base de esta capa
+    var y0 = H * FADE[L][0], y1 = H * FADE[L][1];
+    var fg = mainCtx.createLinearGradient(0, y0, 0, y1);
+    fg.addColorStop(0, 'rgba(' + FOG[L] + ',0)');
+    fg.addColorStop(1, 'rgba(' + FOG[L] + ',0.94)');
+    mainCtx.fillStyle = fg;
+    mainCtx.fillRect(0, y0, W, y1 - y0);
+    mainCtx.fillStyle = 'rgba(' + FOG[L] + ',0.94)';
+    mainCtx.fillRect(0, y1, W, H - y1);
+  }
+
+  /* ---------- Bucle ---------- */
+  var start = performance.now(), last = start;
+  function frame(now) {
+    var t = (now - start) / 1000;
+    var dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    pulse = Math.max(0, pulse - dt * 0.8);
+    var k = reduce ? 1 : 1 - Math.pow(1 - Math.min(1, Math.max(0, t - 0.8) / 3), 3);
+    ctx = mainCtx;
+    ctx.clearRect(0, 0, W, H);
+    drawStars(t);
+    drawBokeh(t);
+    drawMeteors(t, dt);
+    drawLayer(0, t, k);
+    drawLayer(1, t, k);
+    drawLayer(2, t, k);
+    for (var i = 0; i < flowers.length; i++) {
+      if (flowers[i].layer === 3) drawFlower(flowers[i], t, k);
+    }
+    drawEmbers(t, dt);
+    drawGround(t);
+    drawFalls(t, dt);
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- Toque: ráfaga de pétalos y estrella fugaz ---------- */
+  var hint = document.getElementById('hint');
+  window.addEventListener('pointerdown', function (e) {
+    var i, a, sp;
+    for (i = 0; i < 14; i++) {
+      a = Math.random() * 6.2832;
+      sp = 60 + Math.random() * 160;
+      falls.push({
+        x: e.clientX, y: e.clientY,
+        vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 80,
+        s: 3.5 + Math.random() * 4.5,
+        rot: Math.random() * 6.28, vr: -4 + Math.random() * 8,
+        ph: Math.random() * 6.28, burst: true, life: 1.4 + Math.random() * 0.8
+      });
+    }
+    pulse = 1;
+    if (!reduce) spawnMeteor();
+    hint.classList.add('gone');
+  });
+
+  layout();
+  window.addEventListener('resize', layout);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
